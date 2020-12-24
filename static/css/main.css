@@ -16,3 +16,9 @@ body{
 #orders-pending{
     background-color: #7CD1c0;
 }
+
+img {
+    display: block;
+    max-width: 3%;
+    height: auto;
+  }

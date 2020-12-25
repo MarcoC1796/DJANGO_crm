@@ -40,3 +40,6 @@ def customer(request, pk):
         'orders':orders,
         'orders_count': orders_count
     })
+
+def createOrder(request):
+    return render(request, 'accounts/order_form.html')

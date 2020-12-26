@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import *
+from .forms import *
 # Create your views here.
 
 def home(request):
@@ -42,4 +43,38 @@ def customer(request, pk):
     })
 
 def createOrder(request):
-    return render(request, 'accounts/order_form.html')
+    form = OrderForm
+    if request.method == 'POST':
+        # print('Printing POST:', request.POST)
+        form = OrderForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('/')
+    return render(request, 'accounts/order_form.html', {
+        "form": OrderForm
+    })
+
+def updateOrder(request, pk):
+
+    order = Order.objects.get(id=pk)
+    form = OrderForm(instance=order)
+
+    if request.method == 'POST':
+        # print('Printing POST:', request.POST)
+        form = OrderForm(request.POST, instance=order)
+        if form.is_valid():
+            form.save()
+            return redirect('/')
+    return render(request, 'accounts/order_form.html',{
+        'form': form
+    })
+
+def deleteOrder(request, pk):
+    order = Order.objects.get(id=pk)
+    if request.method == 'POST':
+        order.delete()
+        return redirect('/')
+        
+    return render(request, 'accounts/delete.html', {
+        'item': order
+    })

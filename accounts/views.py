@@ -8,11 +8,11 @@ from .filters import OrderFilter
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-# Create your views here.
+from .decorators import unauthenticated_user
 
+# Create your views here.
+@unauthenticated_user
 def registerPage(request):
-    if request.user.is_authenticated:
-        return redirect(reverse('home'))
     form = CreateUserForm()
     if request.method == 'POST':
         form = CreateUserForm(request.POST)
@@ -25,6 +25,7 @@ def registerPage(request):
         'form': form
     })
 
+@unauthenticated_user
 def loginPage(request):
     if request.user.is_authenticated:
         return redirect(reverse('home'))
@@ -66,6 +67,11 @@ def home(request):
         'total_orders': total_orders,
         'delivered': delivered,
         'pending': pending
+    })
+
+def userPage(request):
+    return render(request, 'accounts/uset.html', {
+
     })
 
 @login_required(login_url='login')

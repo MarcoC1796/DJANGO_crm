@@ -8,7 +8,8 @@ from .filters import OrderFilter
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .decorators import unauthenticated_user
+from django.contrib.auth.models import Group
+from .decorators import *
 
 # Create your views here.
 @unauthenticated_user
@@ -17,9 +18,13 @@ def registerPage(request):
     if request.method == 'POST':
         form = CreateUserForm(request.POST)
         if form.is_valid():
-            form.save()
-            user = form.cleaned_data.get('username')
-            messages.success(request, 'Account was created for ' + user)
+            user = form.save()
+            username = form.cleaned_data.get('username')
+
+            group = Group.objects.get(name='customer')
+            user.groups.add(group)
+
+            messages.success(request, 'Account was created for ' + username)
             return redirect(reverse('login'))
     return render(request, 'accounts/register.html', {
         'form': form
@@ -50,6 +55,7 @@ def logoutUser(request):
     return redirect(reverse('login'))
 
 @login_required(login_url='login')
+@admin_only
 def home(request):
     orders = Order.objects.all()
     customers = Customer.objects.all()
@@ -70,11 +76,12 @@ def home(request):
     })
 
 def userPage(request):
-    return render(request, 'accounts/uset.html', {
+    return render(request, 'accounts/user.html', {
 
     })
 
 @login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
 def products(request):
     products = Product.objects.all()
     return render(request, 'accounts/products.html', 
@@ -83,6 +90,7 @@ def products(request):
     })
 
 @login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
 def customer(request, pk):
     customer = Customer.objects.get(pk=pk)
 
@@ -101,6 +109,7 @@ def customer(request, pk):
     })
 
 @login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
 def createOrder(request, pk):
     # Parent and child models with allowed fields
     OrderFormSet = inlineformset_factory(Customer, Order, fields=('product', 'status'), extra=5) 
@@ -117,6 +126,7 @@ def createOrder(request, pk):
     })
 
 @login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
 def updateOrder(request, pk):
 
     order = Order.objects.get(id=pk)
@@ -134,6 +144,7 @@ def updateOrder(request, pk):
     })
 
 @login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
 def deleteOrder(request, pk):
     order = Order.objects.get(id=pk)
     if request.method == 'POST':
